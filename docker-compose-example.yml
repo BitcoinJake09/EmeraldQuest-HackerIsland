@@ -7,15 +7,18 @@ spigot:
     - MIN_LOOT=3
     - MAX_LOOT=100
     - LOOTIPLIER=50
-    - ADMIN_UUID=CHANGEME
+    - ADMIN_UUID=bceeaefc-9590-4233-a858-d3eb933121ec
     - SET_PvP=true
   build: .
   volumes:
-    - "./build/libs/:/spigot/plugins"
-    - ".:/emeraldquest"
+    - "/EmeraldQuest/spigot/world:/spigot/world"
+    - "/EmeraldQuest/spigot/world_nether:/spigot/world_nether"
+    - "/EmeraldQuest/spigot/world_the_end:/spigot/world_the_end"
   ports:
-    - "25565:25565"
+    - "25564:25564"
   links:
     - redis
 redis:
   image: redis
+  volumes:
+    - "/EmeraldQuest/redis:/data/"
