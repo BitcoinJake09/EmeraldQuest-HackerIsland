@@ -544,6 +544,7 @@ public void onClick(PlayerInteractEvent event) throws ParseException, org.json.s
                 }
             }
         }
+/*
 //start chest/sign shops?
 	if (event.getClickedBlock().getType() == Material.WALL_SIGN || event.getClickedBlock().getType() == Material.SIGN) {
                 final Player player=event.getPlayer();
@@ -570,6 +571,7 @@ public void onClick(PlayerInteractEvent event) throws ParseException, org.json.s
 //  Block attachedBlock = b.getRelative(s.getAttachedFace());
 //  Block block = location.getBlock().getRelative(sign.getAttachedFace());
 	}
+	*/
 	
     }
     @EventHandler
@@ -1036,4 +1038,3 @@ if (whatLoot<=4){
 	}
 
 }
-
