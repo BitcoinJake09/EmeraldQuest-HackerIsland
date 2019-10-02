@@ -34,7 +34,7 @@ commands:
     usage: "/spawn"
   mod:
     description: "Utility to add/remove/list moderators"
-    usage: "/mod <add|remove|list>"
+    usage: "/mod <add|remove|list|flag|hq>"
   land:
     description: "Claim or manage land plots"
     usage: "/land <claim|permission>"
