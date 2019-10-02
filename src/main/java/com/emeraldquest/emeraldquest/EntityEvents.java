@@ -106,9 +106,6 @@ public class EntityEvents implements Listener {
     @EventHandler
     public void onPlayerLogin(PlayerLoginEvent event) {
 	Player player=event.getPlayer();
-
-
-
 	//this adds a bonus to new players of whatever the land price is @bitcoinjake09
 	if(!(EmeraldQuest.REDIS.exists("name:"+player.getUniqueId().toString()))) {
 		emeraldQuest.addEmeralds(player,(EmeraldQuest.LAND_PRICE));
@@ -164,9 +161,22 @@ public class EntityEvents implements Listener {
             if (emeraldQuest.isModerator(player)) {
                 if ((emeraldQuest.EMERALDQUEST_ENV.equals("development")==true)||(player.getUniqueId().toString().equals(EmeraldQuest.ADMIN_UUID.toString()))) {
                     player.setOp(true);
+		player.sendMessage(ChatColor.YELLOW + "You are a owner on this server.");
+		player.setPlayerListName(ChatColor.WHITE + "[OWNER] " + ChatColor.WHITE + player.getName());
                 }
-                player.sendMessage(ChatColor.YELLOW + "You are a moderator on this server.");
+                else {
+		player.sendMessage(ChatColor.YELLOW + "You are a moderator on this server.");
 		player.setPlayerListName(ChatColor.RED + "[MOD] " + ChatColor.WHITE + player.getName());
+		}
+		if (player.getLocation().getWorld().getName().equals("MOD-HQ")) {
+		WorldBorder wb = Bukkit.getWorld("MOD-HQ").getWorldBorder();
+		wb.setCenter(0, 0);
+		wb.setSize(512);
+		System.out.println("MOD-HQ Size: " + wb.getSize() + " CenterX: " + wb.getCenter());
+			player.teleport(new Location(Bukkit.getWorld("MOD-HQ"), 0, 3, 0)); //Teleport to the location
+			player.removeMetadata("teleporting", emeraldQuest);
+			player.sendMessage(ChatColor.WHITE + "welcome to MOD-HQ !!!");
+	}
 		}
 
             String welcome = rawwelcome.toString();
@@ -261,7 +271,7 @@ public class EntityEvents implements Listener {
 			diff = TimeUnit.MILLISECONDS.toDays(diff);
 			System.out.println ("Days consecutively logged in: " + diff);
 			if (diff>0) {DailyReward=DailyReward+DailyReward*((int)diff);}
-			if (DailyReward>1000) {DailyReward=1000;}
+			if (DailyReward>200) {DailyReward=200;}
 			emeraldQuest.addEmeralds(player,DailyReward);
 			player.sendMessage(ChatColor.GREEN+"you recived "+DailyReward+" emeralds daily reward!");
 			player.sendMessage(ChatColor.GREEN+"Days consecutively logged in : " + diff);
@@ -575,6 +585,15 @@ public void onClick(PlayerInteractEvent event) throws ParseException, org.json.s
 	
     }
     @EventHandler
+    public void onBedEnter(final PlayerBedEnterEvent event) {
+        Player player = (Player) event.getPlayer();
+	if (emeraldQuest.savePlayerWorldDatas(player))
+				player.sendMessage(ChatColor.GREEN+"Player data Saved!");
+			else
+				player.sendMessage(ChatColor.RED+"Player data Saved!");
+    }
+
+    @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         event.setKeepInventory(true);
         event.setKeepLevel(true);
@@ -784,11 +803,11 @@ if (whatLoot<=4){
                         }
                         if(EmeraldQuest.EMERALDQUEST_ENV.equals("development"))
                             System.out.println("[spawn mob] " + entityType.name() + " lvl " + level + " spawn distance: " + spawn_distance);
-                        if (emeraldQuest.rand(1, 20) == 20 && emeraldQuest.spookyMode == true) {
+                        /*if (emeraldQuest.rand(1, 20) == 20 && emeraldQuest.spookyMode == true) {
                             e.getLocation().getWorld().spawnEntity(new Location(e.getLocation().getWorld(), e.getLocation().getX(), 100, e.getLocation().getZ()), EntityType.GHAST);
                             e.getLocation().getWorld().spawnEntity(e.getLocation(), EntityType.WITCH);
                             e.getLocation().getWorld().spawnEntity(e.getLocation(), EntityType.VILLAGER);
-                        }
+                        }*/
                     } catch (Exception e1) {
                         System.out.println("Event failed. Shutting down...");
                         e1.printStackTrace();
