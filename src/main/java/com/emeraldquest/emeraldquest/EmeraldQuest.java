@@ -19,6 +19,7 @@ import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
+import org.bukkit.block.Block;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -31,6 +32,7 @@ import org.bukkit.scoreboard.*;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.impl.SlackSessionFactory;
+import org.bukkit.WorldBorder;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -242,28 +244,12 @@ public class  EmeraldQuest extends JavaPlugin {
         if (!player.hasMetadata("teleporting")) {
             player.sendMessage(ChatColor.GREEN + "Teleporting to MOD-HQ...");
             player.setMetadata("teleporting", new FixedMetadataValue(this, true));
-	    Location location=player.getLocation();
-		if(this.getServer().getWorld("MOD-HQ") == null){
-		location = new WorldCreator("MOD-HQ").createWorld().getSpawnLocation();
-		WorldBorder wb = Bukkit.getWorld("MOD-HQ").getWorldBorder();
-		wb.setCenter(0, 0);
-		wb.setSize(512);
-		System.out.println("MOD-HQ Size: " + wb.getSize() + " CenterX: " + wb.getCenter());
-		} else {
-			WorldBorder wb = Bukkit.getWorld("MOD-HQ").getWorldBorder();
-		wb.setCenter(0, 0);
-		wb.setSize(512);
-		System.out.println("MOD-HQ Size: " + wb.getSize() + " CenterX: " + wb.getCenter());
-		}
-            World world = Bukkit.getWorld("MOD-HQ");
-
-            location.setX(0);
-            location.setY(3);
-            location.setZ(0);
-
+            Location location= new Location(getServer().createWorld(new WorldCreator("MOD-HQ")),0,3,0,0,0);
+            System.out.println("location: " + location);
             final Location spawn=location;
 
             Chunk c = spawn.getChunk();
+            System.out.println("Chunk: " + c);
             if (!c.isLoaded()) {
                 c.load();
             }
@@ -272,20 +258,12 @@ public class  EmeraldQuest extends JavaPlugin {
             scheduler.scheduleSyncDelayedTask(this, new Runnable() {
 
                 public void run() {
-
-			player.teleport(new Location(Bukkit.getWorld("MOD-HQ"), 0, 3, 0));
+                    player.teleport(spawn);
                     player.removeMetadata("teleporting", plugin);
                 }
-	      
             }, 60L);
         }
     }
-
-
-
-
-
-
     public void createScheduledTimers() {
         BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 
