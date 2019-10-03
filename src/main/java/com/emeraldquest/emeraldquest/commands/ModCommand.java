@@ -13,7 +13,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
-import org.bukkit.WorldBorder;
+
 
 public class ModCommand extends CommandAction {
     private EmeraldQuest emeraldQuest;
@@ -71,37 +71,7 @@ public class ModCommand extends CommandAction {
 
 	return true;	
 	} else if (args[0].equalsIgnoreCase("hq")){
-            player.sendMessage(ChatColor.GREEN + "Teleporting to MOD-HQ...");
-            player.setMetadata("teleporting", new FixedMetadataValue(emeraldQuest, true));
-	    Location location=player.getLocation();
-		if(emeraldQuest.getServer().getWorld("MOD-HQ") == null){
-		location = new WorldCreator("MOD-HQ").createWorld().getSpawnLocation();
-		WorldBorder wb = Bukkit.getWorld("MOD-HQ").getWorldBorder();
-		wb.setCenter(0, 0);
-		wb.setSize(512);
-		System.out.println("MOD-HQ Size: " + wb.getSize() + " CenterX: " + wb.getCenter());
-		} else {
-			WorldBorder wb = Bukkit.getWorld("MOD-HQ").getWorldBorder();
-		wb.setCenter(0, 0);
-		wb.setSize(512);
-		System.out.println("MOD-HQ Size: " + wb.getSize() + " CenterX: " + wb.getCenter());
-		}
-            World world = Bukkit.getWorld("MOD-HQ");
-
-            location.setX(0);
-            location.setY(3);
-            location.setZ(0);
-
-            final Location spawn=location;
-
-            Chunk c = spawn.getChunk();
-            if (!c.isLoaded()) {
-                c.load();
-            } emeraldQuest.getServer().getScheduler().scheduleSyncDelayedTask(emeraldQuest, new Runnable() {
-	        public void run() {
-			player.teleport(spawn); //Teleport to the location
-       		}
-            }, 60L);
+		emeraldQuest.teleportToModHQ(player);
 	return true;		
       } else {
             return false;
