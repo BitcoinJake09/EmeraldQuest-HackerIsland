@@ -19,6 +19,7 @@ import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
+import org.bukkit.block.Block;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -31,6 +32,7 @@ import org.bukkit.scoreboard.*;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.impl.SlackSessionFactory;
+import org.bukkit.WorldBorder;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -98,7 +100,7 @@ public class  EmeraldQuest extends JavaPlugin {
     }
     public StatsDClient statsd;
     public Player last_loot_player;
-    public boolean spookyMode=false;
+    //public boolean spookyMode=false;
     public boolean rate_limit=false;
     // caches is used to reduce the amounts of calls to redis, storing some chunk information in memory
     public HashMap<String,Boolean> land_unclaimed_cache = new HashMap();
@@ -172,7 +174,7 @@ public class  EmeraldQuest extends JavaPlugin {
         modCommands.put("killAllVillagers", new KillAllVillagersCommand(this));
         modCommands.put("createtp", new CreateTPCommand(this));
         modCommands.put("crashTest", new CrashtestCommand(this));
-        modCommands.put("mod", new ModCommand());
+        modCommands.put("mod", new ModCommand(this));
         modCommands.put("ban", new BanCommand());
         modCommands.put("permban", new PermbanCommand());
         modCommands.put("unban", new UnbanCommand());
@@ -197,7 +199,7 @@ public class  EmeraldQuest extends JavaPlugin {
 
                 playSBoardObj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-                playSBoardObj.setDisplayName(ChatColor.GREEN + ChatColor.BOLD.toString() + "Emerald" + ChatColor.GOLD + ChatColor.BOLD.toString() + "Quest");
+                playSBoardObj.setDisplayName(ChatColor.GREEN + ChatColor.BOLD.toString() + "Emerald" + ChatColor.GOLD + ChatColor.BOLD.toString() + "Quest" + ChatColor.GREEN + ".co");
 
                 Score score = playSBoardObj.getScore(ChatColor.GREEN + EmeraldQuest.DENOMINATION_NAME);
 
@@ -224,6 +226,30 @@ public class  EmeraldQuest extends JavaPlugin {
             final Location spawn=location;
 
             Chunk c = spawn.getChunk();
+            if (!c.isLoaded()) {
+                c.load();
+            }
+            EmeraldQuest plugin = this;
+            BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+            scheduler.scheduleSyncDelayedTask(this, new Runnable() {
+
+                public void run() {
+                    player.teleport(spawn);
+                    player.removeMetadata("teleporting", plugin);
+                }
+            }, 60L);
+        }
+    }
+    public void teleportToModHQ(Player player) {
+        if (!player.hasMetadata("teleporting")) {
+            player.sendMessage(ChatColor.GREEN + "Teleporting to MOD-HQ...");
+            player.setMetadata("teleporting", new FixedMetadataValue(this, true));
+            Location location= new Location(getServer().createWorld(new WorldCreator("MOD-HQ")),0,3,0,0,0);
+            System.out.println("location: " + location);
+            final Location spawn=location;
+
+            Chunk c = spawn.getChunk();
+            System.out.println("Chunk: " + c);
             if (!c.isLoaded()) {
                 c.load();
             }
@@ -306,14 +332,14 @@ public class  EmeraldQuest extends JavaPlugin {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         int month = cal.get(Calendar.MONTH);
-        if(month==9) {
+        /*if(month==9) {
             World world=this.getServer().getWorld("world");
             world.setTime(20000);
             world.setStorm(false);
             spookyMode=true;
         } else {
             spookyMode=false;
-        }
+        }*/
     }
 	
 	public void sendWorldMetrics() {
@@ -321,6 +347,8 @@ public class  EmeraldQuest extends JavaPlugin {
         statsd.gauge("entities_world",Bukkit.getServer().getWorld("world").getEntities().size());
         statsd.gauge("entities_nether",Bukkit.getServer().getWorld("world_nether").getEntities().size());
         statsd.gauge("entities_the_end",Bukkit.getServer().getWorld("world_the_end").getEntities().size());
+	
+statsd.gauge("entities_MOD-HQ",Bukkit.getServer().getWorld("MOD-HQ").getEntities().size());
     }
     public void recordMetric(String name,int value) {
         if(SERVER_NAME!=null) {
@@ -490,7 +518,7 @@ public class  EmeraldQuest extends JavaPlugin {
                                         }
                                     } 
 					
-					else {
+					else if (((removeEmeralds(player,(LAND_PRICE*landiplier))) != true)){
                                         //int balance = new User(player).wallet.balance();
                                         if (countEmeralds(player) < (LAND_PRICE*landiplier)) {
                                             player.sendMessage(ChatColor.RED + "You don't have enough money! You need " + ChatColor.BOLD + Math.ceil(((LAND_PRICE*landiplier) - countEmeralds(player))) + ChatColor.RED + " more emeralds.");
@@ -854,4 +882,60 @@ public boolean addEmeralds(Player player,int amount){
 			}//end while loop
 	return false;
 }
+
+
+public boolean savePlayerWorldDatas(Player player) {
+	try {
+	String saveWorld = player.getWorld().getName();
+
+	ItemStack[] inventoryContentsItemStack = player.getInventory().getContents();
+	getConfig().set("inventoryContents"+player.getUniqueId().toString()+saveWorld, inventoryContentsItemStack);
+
+	ItemStack[] armourContentsItemStack = player.getInventory().getArmorContents();
+	getConfig().set("armourContents"+player.getUniqueId().toString()+saveWorld, armourContentsItemStack);
+
+	ItemStack[] enderChestContentsItemStack = player.getEnderChest().getContents();
+	getConfig().set("enderChestContents"+player.getUniqueId().toString()+saveWorld, enderChestContentsItemStack);
+
+
+	REDIS.set("xplevel"+player.getUniqueId().toString()+saveWorld, Integer.toString(player.getLevel()));
+        saveConfig();
+
+	REDIS.set("locationX"+player.getUniqueId().toString()+saveWorld, String.valueOf(player.getLocation().getX()));
+	REDIS.set("locationZ"+player.getUniqueId().toString()+saveWorld, String.valueOf(player.getLocation().getZ()));
+	REDIS.set("locationY"+player.getUniqueId().toString()+saveWorld, String.valueOf(player.getLocation().getY()));
+
+	getConfig().set("BedSpawnLocation"+player.getUniqueId().toString()+saveWorld, player.getBedSpawnLocation());
+
+
+        saveConfig();
+		return true;
+	} catch (Exception exs) {
+		System.out.println(exs);
+	}
+	return false;
 }
+
+public boolean loadPlayerWorldDatas(Player player, String loadWorld) {
+	try {
+	if (getConfig().get("inventoryContents"+player.getUniqueId().toString()+loadWorld) != null)
+	player.getInventory().setContents((ItemStack[]) getConfig().get("inventoryContents"+player.getUniqueId().toString()+loadWorld));
+
+	if (getConfig().get("armourContents"+player.getUniqueId().toString()+loadWorld) != null)
+	player.getInventory().setArmorContents((ItemStack[]) getConfig().get("armourContents"+player.getUniqueId().toString()+loadWorld));
+
+	if (getConfig().get("enderChestContents"+player.getUniqueId().toString()+loadWorld) != null)
+	player.getEnderChest().setContents((ItemStack[]) getConfig().get("enderChestContents"+player.getUniqueId().toString()+loadWorld));
+
+       if (REDIS.get("xplevel"+player.getUniqueId().toString()+loadWorld) != null) player.setTotalExperience(Integer.parseInt(REDIS.get("xplevel"+player.getUniqueId().toString()+loadWorld)));
+
+	player.setBedSpawnLocation((Location) 	getConfig().get("BedSpawnLocation"+player.getUniqueId().toString()+loadWorld));
+
+		return true;
+	} catch (Exception exs) {
+		System.out.println(exs);
+	}
+	return false;
+}
+
+} //EOF
