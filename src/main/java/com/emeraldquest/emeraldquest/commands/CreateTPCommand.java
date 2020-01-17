@@ -35,7 +35,7 @@ public class CreateTPCommand extends CommandAction {
 		int iter=1;
 		for (String tempOwnerList : ownerList) {
       sender.sendMessage(
-          ChatColor.DARK_RED
+          ChatColor.GREEN
               +" "+iter+") "+ EmeraldQuest.REDIS.get(tempOwnerList));
 		iter++;
 		}
