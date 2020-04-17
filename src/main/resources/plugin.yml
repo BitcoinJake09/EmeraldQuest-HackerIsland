@@ -44,7 +44,7 @@ commands:
   killAllVillagers:
     description: "Kills all the villagers"
     usage: "/killAllVillagers"
-  send:
-    description: "sends ems to other player"
-    usage: "/send <amount> <player>"
+  tip:
+    description: "tip ems to other player"
+    usage: "/tip <amount> <player>"
 
