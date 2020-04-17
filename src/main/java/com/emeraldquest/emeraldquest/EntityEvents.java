@@ -644,6 +644,7 @@ if (whatLoot<=4){
 				else{
                                         System.out.println("[loot]"+whatLoot+" "+player.getDisplayName()+": Emeralds  "+(money));
                                         player.sendMessage(ChatColor.GREEN + "You got " + ChatColor.BOLD + money + ChatColor.GREEN + " Emeralds of loot!");
+					emeraldQuest.announce(player.getDisplayName() + " Won " + (money) +" Emeralds!");
                                         // player.playSound(player.getLocation(), Sound.LEVEL_UP, 20, 1);
                                         if (emeraldQuest.messageBuilder != null) {
 
@@ -668,7 +669,7 @@ if (whatLoot<=4){
                     
 		}//end of emerald
                     // Add EXP
-                    user.addExperience(level*2);
+                    user.addExperience(level*4);
                     if(emeraldQuest.messageBuilder!=null) {
 
                         final BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
