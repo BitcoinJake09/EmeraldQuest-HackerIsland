@@ -165,7 +165,7 @@ public class  EmeraldQuest extends JavaPlugin {
 	commands.put("home", new HomeCommand(this));
         commands.put("clan", new ClanCommand());
         commands.put("transfer", new TransferCommand(this));
-        commands.put("send", new SendCommand(this));
+        commands.put("tip", new TipCommand(this));
         commands.put("profession", new ProfessionCommand(this));
         commands.put("spawn", new SpawnCommand(this));
         //commands.put("vote", new VoteCommand(this));
@@ -186,6 +186,13 @@ public class  EmeraldQuest extends JavaPlugin {
 
     }
     
+
+  public static void announce(final String message) {
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      player.sendMessage(ChatColor.GREEN + message);
+    }
+  }
+
     public void updateScoreboard(final Player player) throws ParseException, org.json.simple.parser.ParseException, IOException {
             User user=new User(player);
  	
