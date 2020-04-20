@@ -7,6 +7,7 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.*;
+import java.net.*;
 
 import com.emeraldquest.emeraldquest.commands.*;
 import com.mixpanel.mixpanelapi.ClientDelivery;
@@ -85,6 +86,11 @@ public class  EmeraldQuest extends JavaPlugin {
     public final static String REDIS_HOST = System.getenv("REDIS_1_PORT_6379_TCP_ADDR") != null ? System.getenv("REDIS_1_PORT_6379_TCP_ADDR") : "localhost";
     public final static Integer REDIS_PORT = System.getenv("REDIS_1_PORT_6379_TCP_PORT") != null ? Integer.parseInt(System.getenv("REDIS_1_PORT_6379_TCP_PORT")) : 6379;
     public final static Jedis REDIS = new Jedis(REDIS_HOST, REDIS_PORT);
+
+  public static final String DISCORD_HOOK_URL = System.getenv("DISCORD_HOOK_URL");
+  public static final String DISCORD_URL = System.getenv("DISCORD_URL");
+  public static final String DISCORD_HOOK_CHANNEL_ID = System.getenv("DISCORD_HOOK_CHANNEL_ID");
+
     // FAILS
     // public final static JedisPool REDIS_POOL = new JedisPool(new JedisPoolConfig(), REDIS_HOST, REDIS_PORT);
 
@@ -112,7 +118,9 @@ public class  EmeraldQuest extends JavaPlugin {
     public boolean maintenance_mode=false;
     private Map<String, CommandAction> commands;
     private Map<String, CommandAction> modCommands;
+    private Map<String, CommandAction> ytCommands;
     private Player[] moderators;
+    private Player[] youtubers;
 
     @Override
     public void onEnable() {
@@ -170,6 +178,7 @@ public class  EmeraldQuest extends JavaPlugin {
         commands.put("spawn", new SpawnCommand(this));
         //commands.put("vote", new VoteCommand(this));
         modCommands = new HashMap<String, CommandAction>();
+        modCommands.put("rank", new RankCommand(this));
         modCommands.put("butcher", new ButcherCommand());
         modCommands.put("killAllVillagers", new KillAllVillagersCommand(this));
         modCommands.put("createtp", new CreateTPCommand(this));
@@ -183,13 +192,25 @@ public class  EmeraldQuest extends JavaPlugin {
         modCommands.put("emergencystop", new EmergencystopCommand());
         // TODO: Remove this command after migrate.
         modCommands.put("migrateclans", new MigrateClansCommand());
-
+        ytCommands = new HashMap<String, CommandAction>();
+        ytCommands.put("spectate", new SpectateCommand(this));
+        ytCommands.put("tp", new TpCommand(this));
+        ytCommands.put("ban", new BanCommand());
+        ytCommands.put("unban", new UnbanCommand());
+        ytCommands.put("banlist", new BanlistCommand());
     }
     
 
   public static void announce(final String message) {
     for (Player player : Bukkit.getOnlinePlayers()) {
       player.sendMessage(ChatColor.GREEN + message);
+    }
+  }
+  public static void announceIgnore(final String message, final String ignoreWho) {
+    for (Player player : Bukkit.getOnlinePlayers()) {
+	if(player.getDisplayName() != ignoreWho) {
+      player.sendMessage(ChatColor.GREEN + message);	
+	}
     }
   }
 
@@ -724,7 +745,13 @@ public boolean canBuild(Location location, Player player) {
       return false;
     }
 }
-
+     public boolean isYoutuber(Player player) {
+    if (REDIS.sismember("youtubers", player.getUniqueId().toString())) {
+      return true;
+    } else {
+      return false;
+    }
+}
 
 
     
@@ -787,7 +814,17 @@ public boolean canBuild(Location location, Player player) {
                     if (isModerator(player)) {
                         entry.getValue().run(sender, cmd, label, args, player);
                     } else {
-                        sender.sendMessage("You don't have enough permissions to execute this command!");
+                        //sender.sendMessage("You don't have enough permissions to execute this command!");
+                    }
+                }
+            }
+ 		// YT COMMANDS
+            for(Map.Entry<String, CommandAction> entry : ytCommands.entrySet()) {
+                if (cmd.getName().equalsIgnoreCase(entry.getKey())) {
+                    if (isYoutuber(player)) {
+                        entry.getValue().run(sender, cmd, label, args, player);
+                    } else {
+                        //sender.sendMessage("You don't have enough permissions to execute this command!");
                     }
                 }
             }
@@ -944,5 +981,59 @@ public boolean loadPlayerWorldDatas(Player player, String loadWorld) {
 	}
 	return false;
 }
+
+  public void sendDiscordMessage(String content) {
+    if(System.getenv("DISCORD_HOOK_URL")!=null) {
+      //System.out.println("[discord] "+content);
+      try {
+          String json = "{\"content\":\""+content+"\"}";
+
+          JSONParser parser = new JSONParser();
+
+          final JSONObject jsonObject = new JSONObject();
+          jsonObject.put("content", content);
+          CookieHandler.setDefault(new CookieManager());
+
+          URL url = new URL(System.getenv("DISCORD_HOOK_URL"));
+          HttpsURLConnection con = null;
+
+          System.setProperty("http.agent", "");
+
+          con = (HttpsURLConnection) url.openConnection();
+
+          con.setRequestMethod("POST");
+          con.setRequestProperty("Content-Type", "application/json");
+          con.setRequestProperty("Cookie", ""+SERVER_NAME+"=true");
+          con.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
+
+          con.setDoOutput(true);
+          OutputStreamWriter out = new OutputStreamWriter(con.getOutputStream());
+          out.write(json);
+          out.close();
+	if(con.getResponseCode()==200) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+              response.append(inputLine);
+            }
+            in.close();
+            //System.out.println(response.toString());
+            //return true;
+          } else {
+            //return false;
+          }
+          
+
+      } catch (Exception e) {
+          e.printStackTrace();
+          //return false;
+      }
+    }
+    //return false;
+
+  }
+
 
 } //EOF

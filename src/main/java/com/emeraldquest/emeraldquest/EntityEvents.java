@@ -65,6 +65,7 @@ public class EntityEvents implements Listener {
     EmeraldQuest emeraldQuest;
     StringBuilder rawwelcome = new StringBuilder();
     String PROBLEM_MESSAGE="Can't join right now. Come back later";
+    boolean isNewPlayer = false;
 
 
     private static final List<Material> PROTECTED_BLOCKS = Arrays.asList(Material.CHEST, Material.ACACIA_DOOR,
@@ -100,6 +101,16 @@ public class EntityEvents implements Listener {
 
             rawwelcome.append(line);
         }
+    }
+
+  @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        // Called when a player leaves a server
+        Player player = event.getPlayer();
+        String quitMessage = "left the game";
+	if(System.getenv("DISCORD_HOOK_URL")!=null) {
+			emeraldQuest.sendDiscordMessage("Player " + player.getName() + " " + quitMessage);
+	}
     }
 
 
@@ -146,7 +157,17 @@ public class EntityEvents implements Listener {
         try {
             final Player player=event.getPlayer();
             // On dev environment, admin gets op. In production, nobody gets op.
-
+	if (!EmeraldQuest.REDIS.exists("LastLoginDate:"+player.getUniqueId().toString())) {
+		isNewPlayer = true;
+	}
+		if(System.getenv("DISCORD_HOOK_URL")!=null) {
+			if (isNewPlayer == true) {
+			emeraldQuest.announce("NEW Player " + player.getName() + " joined!");
+			emeraldQuest.sendDiscordMessage("NEW Player " + player.getName() + " joined!");
+			} else {
+			emeraldQuest.sendDiscordMessage("Player " + player.getName() + " joined the server! welcome back!");
+			}
+		}
             player.setGameMode(GameMode.SURVIVAL);
             emeraldQuest.updateScoreboard(player);
             emeraldQuest.setTotalExperience(player);
@@ -162,11 +183,17 @@ public class EntityEvents implements Listener {
                 if ((emeraldQuest.EMERALDQUEST_ENV.equals("development")==true)||(player.getUniqueId().toString().equals(EmeraldQuest.ADMIN_UUID.toString()))) {
                     player.setOp(true);
 		player.sendMessage(ChatColor.YELLOW + "You are a owner on this server.");
-		player.setPlayerListName(ChatColor.WHITE + "[OWNER] " + ChatColor.WHITE + player.getName());
+		player.setPlayerListName(ChatColor.BLUE + "[OWNER] " + ChatColor.WHITE + player.getName());
+		if (emeraldQuest.isYoutuber(player)) {
+			player.setPlayerListName(ChatColor.YELLOW + "[YT] " + ChatColor.BLUE + "[OWNER] " + ChatColor.WHITE + player.getName());		
+		}
                 }
                 else {
 		player.sendMessage(ChatColor.YELLOW + "You are a moderator on this server.");
 		player.setPlayerListName(ChatColor.RED + "[MOD] " + ChatColor.WHITE + player.getName());
+		if (emeraldQuest.isYoutuber(player)) {
+			player.setPlayerListName(ChatColor.YELLOW + "[YT] " + ChatColor.RED + "[MOD] " + ChatColor.WHITE + player.getName());		
+		}
 		}
 		if (player.getLocation().getWorld().getName().equals("MOD-HQ")) {
 		WorldBorder wb = Bukkit.getWorld("MOD-HQ").getWorldBorder();
@@ -185,8 +212,14 @@ public class EntityEvents implements Listener {
             if(EmeraldQuest.REDIS.exists("clan:"+player.getUniqueId().toString())) {
                 String clan = EmeraldQuest.REDIS.get("clan:"+player.getUniqueId().toString());
                 player.setPlayerListName(ChatColor.GOLD + "[" + clan + "] " + ChatColor.WHITE + player.getName());
+            if (emeraldQuest.isYoutuber(player)) {
+		player.setPlayerListName(ChatColor.YELLOW + "[YT] " + ChatColor.GOLD + "[" + clan + "] " + ChatColor.WHITE + player.getName());		
+		}
             if (emeraldQuest.isModerator(player)) {
-		player.setPlayerListName(ChatColor.RED + "[MOD] " + ChatColor.GOLD + "[" + clan + "] " + ChatColor.WHITE + player.getName());		
+		player.setPlayerListName(ChatColor.RED + "[MOD] " + ChatColor.GOLD + "[" + clan + "] " + ChatColor.WHITE + player.getName());	
+            if (emeraldQuest.isYoutuber(player)) {
+		player.setPlayerListName(ChatColor.YELLOW + "[YT] " + ChatColor.RED + "[MOD] " + ChatColor.GOLD + "[" + clan + "] " + ChatColor.WHITE + player.getName());		
+		}	
 		}
             }
 
@@ -597,7 +630,12 @@ public void onClick(PlayerInteractEvent event) throws ParseException, org.json.s
     public void onPlayerDeath(PlayerDeathEvent event) {
         event.setKeepInventory(true);
         event.setKeepLevel(true);
-        event.setDeathMessage(null);
+
+		Player p = event.getEntity();
+		Player player = (Player) p;
+		if(System.getenv("DISCORD_HOOK_URL")!=null) {
+			emeraldQuest.sendDiscordMessage("" +event.getDeathMessage());
+		}
 	
     }
     @EventHandler
@@ -644,7 +682,10 @@ if (whatLoot<=4){
 				else{
                                         System.out.println("[loot]"+whatLoot+" "+player.getDisplayName()+": Emeralds  "+(money));
                                         player.sendMessage(ChatColor.GREEN + "You got " + ChatColor.BOLD + money + ChatColor.GREEN + " Emeralds of loot!");
-					emeraldQuest.announce(player.getDisplayName() + " Won " + (money) +" Emeralds!");
+					emeraldQuest.announceIgnore(player.getDisplayName() + " Won " + (money) +" Emeralds!",player.getDisplayName());
+					if(System.getenv("DISCORD_HOOK_URL")!=null) {
+						emeraldQuest.sendDiscordMessage(player.getDisplayName() + " Won " + (money) +" Emeralds!");
+					}
                                         // player.playSound(player.getLocation(), Sound.LEVEL_UP, 20, 1);
                                         if (emeraldQuest.messageBuilder != null) {
 
