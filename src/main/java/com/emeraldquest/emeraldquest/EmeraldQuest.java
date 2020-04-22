@@ -22,8 +22,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.block.Block;
 import org.bukkit.event.server.ServerListPingEvent;
+import org.bukkit.Material.*;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.Material;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -80,8 +83,8 @@ public class  EmeraldQuest extends JavaPlugin {
     // Support for mixpanel analytics
     public final static String MIXPANEL_TOKEN = System.getenv("MIXPANEL_TOKEN") != null ? System.getenv("MIXPANEL_TOKEN") : null;
     public MessageBuilder messageBuilder;
-    // Support for slack bot
-   
+    // Support for minecraft-mp vote
+    public final static String VOTE_API_KEY = System.getenv("VOTE_API_KEY") != null ? System.getenv("VOTE_API_KEY") : null;
     // REDIS: Look for Environment variables on hostname and port, otherwise defaults to localhost:6379
     public final static String REDIS_HOST = System.getenv("REDIS_1_PORT_6379_TCP_ADDR") != null ? System.getenv("REDIS_1_PORT_6379_TCP_ADDR") : "localhost";
     public final static Integer REDIS_PORT = System.getenv("REDIS_1_PORT_6379_TCP_PORT") != null ? Integer.parseInt(System.getenv("REDIS_1_PORT_6379_TCP_PORT")) : 6379;
@@ -156,7 +159,9 @@ public class  EmeraldQuest extends JavaPlugin {
        
         // sets the redis save intervals
         REDIS.configSet("SAVE","900 1 300 10 60 10000");
-
+	if(System.getenv("VOTE_API_KEY")!=null) {
+		serverInfo();
+	}
      
         // Removes all entities on server restart. This is a workaround for when large numbers of entities grash the server. With the release of Minecraft 1.11 and "max entity cramming" this will be unnecesary.
         //     removeAllEntities();
@@ -174,6 +179,7 @@ public class  EmeraldQuest extends JavaPlugin {
         commands.put("clan", new ClanCommand());
         commands.put("transfer", new TransferCommand(this));
         commands.put("tip", new TipCommand(this));
+        commands.put("vote", new VoteCommand(this));
         commands.put("profession", new ProfessionCommand(this));
         commands.put("spawn", new SpawnCommand(this));
         //commands.put("vote", new VoteCommand(this));
@@ -1033,7 +1039,233 @@ public boolean loadPlayerWorldDatas(Player player, String loadWorld) {
     }
     //return false;
 
+  } // EO discord
+  public boolean giveVoteReward(Player player) {
+	boolean hasOpenSlots = false;
+        for (ItemStack item : player.getInventory().getContents()) {
+	        if (item == null) {
+	                hasOpenSlots = true;
+                        break;
+                }
+        }
+	if (hasOpenSlots) {
+	ItemStack item = new ItemStack(Material.AIR, 1);
+		final int whatLoot = rand(1, 100);
+		if (whatLoot<=1){
+			item = new ItemStack(Material.VILLAGER_SPAWN_EGG, 1);
+		} else if (whatLoot==5){
+			item = new ItemStack(Material.ELYTRA, 1);
+		} else if (whatLoot==6){
+			item = new ItemStack(Material.FIREWORK_ROCKET, 64);
+		} else if (whatLoot==7){
+		announceIgnore(player.getName()+" Just got " + LAND_PRICE + "e for Voting!",player.getName());
+		announceIgnore("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/",player.getName());
+		player.sendMessage(ChatColor.AQUA + "You just got " + LAND_PRICE + "e for Voting!");
+			addEmeralds(player,LAND_PRICE);
+			return true;
+		} else if (whatLoot==8){
+			item = new ItemStack(Material.EXPERIENCE_BOTTLE, 16);
+		} else if (whatLoot==9){
+			item = new ItemStack(Material.GOLDEN_APPLE, 1, (short)1);
+		} else if (whatLoot==10){
+			item = new ItemStack(Material.MOOSHROOM_SPAWN_EGG, 1);
+		} else if (whatLoot==11){
+			item = new ItemStack(Material.PARROT_SPAWN_EGG, 1);
+		} else if (whatLoot==12){
+			item = new ItemStack(Material.TURTLE_SPAWN_EGG, 1);
+		} else if (whatLoot==13){
+			item = new ItemStack(Material.ZOMBIE_HORSE_SPAWN_EGG , 1);
+		} else if (whatLoot==14){
+			item = new ItemStack(Material.MULE_SPAWN_EGG , 1);
+		} else if (whatLoot==15){
+			item = new ItemStack(Material.LLAMA_SPAWN_EGG, 1);
+		} else if (whatLoot==16){
+			item = new ItemStack(Material.HORSE_SPAWN_EGG, 1);
+		} else if (whatLoot==17){
+			item = new ItemStack(Material.DONKEY_SPAWN_EGG, 1);
+		} else if (whatLoot==18){
+			item = new ItemStack(Material.DOLPHIN_SPAWN_EGG , 1);
+		}  else if (whatLoot==19) {
+			item = new ItemStack(Material.SKELETON_HORSE_SPAWN_EGG , 1);
+		}  else if (whatLoot==20) {
+			item = new ItemStack(Material.OCELOT_SPAWN_EGG , 1);
+		}  else if (whatLoot==21) {
+			item = new ItemStack(Material.GUARDIAN_SPAWN_EGG , 1);
+		}  else if (whatLoot==22) {
+			item = new ItemStack(Material.BAT_SPAWN_EGG , 1);
+		} else {
+			announceIgnore(player.getName()+" Just got " + (LAND_PRICE/4) + "e for Voting!",player.getName());
+			announceIgnore("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/",player.getName());
+			player.sendMessage(ChatColor.AQUA + "You just got " + (LAND_PRICE/4) + "e for Voting!");
+			addEmeralds(player,(LAND_PRICE/4));
+			return true;
+		}
+	Integer amount = item.getAmount();
+	announceIgnore(player.getName()+" Just got " + amount + " " + item.getType() + " for Voting!",player.getName());
+	announceIgnore("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/",player.getName());
+	player.sendMessage(ChatColor.AQUA + "You just got " + amount + " " + item.getType() + " for Voting!");
+	player.getInventory().addItem(item);
+	return true;
+	}
+  return false;
   }
 
+
+  public int didVote(String playerName) {
+    if(System.getenv("VOTE_API_KEY")!=null) {
+      //System.out.println("[discord] "+content);
+      try {
+          //String json = "{\"content\":\""+content+"\"}";
+
+          //JSONParser parser = new JSONParser();
+
+          //final JSONObject jsonObject = new JSONObject();
+          //jsonObject.put("content", content);
+          CookieHandler.setDefault(new CookieManager());
+
+          URL url = new URL("https://minecraft-mp.com/api/?object=votes&element=claim&key=" + VOTE_API_KEY + "&username=" + playerName + "");
+          HttpsURLConnection con = null;
+
+          System.setProperty("http.agent", "");
+
+          con = (HttpsURLConnection) url.openConnection();
+
+          con.setRequestMethod("POST");
+          con.setRequestProperty("Content-Type", "application/json");
+          con.setRequestProperty("Cookie", ""+SERVER_NAME+"=true");
+          con.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
+
+          con.setDoOutput(true);
+          //OutputStreamWriter out = new OutputStreamWriter(con.getOutputStream());
+          //out.write(json);
+          //out.close();
+	if(con.getResponseCode()==200) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+              response.append(inputLine);
+            }
+            in.close();
+            //System.out.println(response.toString());
+            return Integer.parseInt(response.toString());
+          } else {
+            return 0;
+          }
+          
+
+      } catch (Exception e) {
+          e.printStackTrace();
+          return 0;
+      }
+    }
+    return 0;
+
+  }
+  public int claimVote(String playerName) {
+    if(System.getenv("VOTE_API_KEY")!=null) {
+      //System.out.println("[discord] "+content);
+      try {
+          //String json = "{\"content\":\""+content+"\"}";
+
+          //JSONParser parser = new JSONParser();
+
+          //final JSONObject jsonObject = new JSONObject();
+          //jsonObject.put("content", content);
+          CookieHandler.setDefault(new CookieManager());
+
+          URL url = new URL("https://minecraft-mp.com/api/?action=post&object=votes&element=claim&key=" + VOTE_API_KEY + "&username=" + playerName + "");
+          HttpsURLConnection con = null;
+
+          System.setProperty("http.agent", "");
+
+          con = (HttpsURLConnection) url.openConnection();
+
+          con.setRequestMethod("POST");
+          con.setRequestProperty("Content-Type", "application/json");
+          con.setRequestProperty("Cookie", ""+SERVER_NAME+"=true");
+          con.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
+
+          con.setDoOutput(true);
+          //OutputStreamWriter out = new OutputStreamWriter(con.getOutputStream());
+          //out.write(json);
+          //out.close();
+	if(con.getResponseCode()==200) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+              response.append(inputLine);
+            }
+            in.close();
+            //System.out.println(response.toString());
+            return Integer.parseInt(response.toString());
+          } else {
+            return 0;
+          }
+          
+
+      } catch (Exception e) {
+          e.printStackTrace();
+          return 0;
+      }
+    }
+    return 0;
+
+  }
+  public void serverInfo() {
+    if(System.getenv("VOTE_API_KEY")!=null) {
+      //System.out.println("[discord] "+content);
+      try {
+          //String json = "{\"content\":\""+content+"\"}";
+
+          //JSONParser parser = new JSONParser();
+
+          //final JSONObject jsonObject = new JSONObject();
+          //jsonObject.put("content", content);
+          CookieHandler.setDefault(new CookieManager());
+
+          URL url = new URL("https://minecraft-mp.com/api/?object=servers&element=detail&key="+VOTE_API_KEY+"");
+          HttpsURLConnection con = null;
+
+          System.setProperty("http.agent", "");
+
+          con = (HttpsURLConnection) url.openConnection();
+
+          con.setRequestMethod("POST");
+          con.setRequestProperty("Content-Type", "application/json");
+          con.setRequestProperty("Cookie", ""+SERVER_NAME+"=true");
+          con.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
+
+          con.setDoOutput(true);
+          //OutputStreamWriter out = new OutputStreamWriter(con.getOutputStream());
+          //out.write(json);
+          //out.close();
+	if(con.getResponseCode()==200) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+              response.append(inputLine);
+            }
+            in.close();
+            System.out.println(response.toString());
+            //return true;
+          } else {
+            //return false;
+          }
+          
+
+      } catch (Exception e) {
+          e.printStackTrace();
+          //return false;
+      }
+    }
+    //return false;
+
+  }//EO voting
 
 } //EOF

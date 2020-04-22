@@ -157,9 +157,9 @@ public class EntityEvents implements Listener {
         try {
             final Player player=event.getPlayer();
             // On dev environment, admin gets op. In production, nobody gets op.
-	if (!EmeraldQuest.REDIS.exists("LastLoginDate:"+player.getUniqueId().toString())) {
+	if(!(EmeraldQuest.REDIS.exists("LastLoginDate:"+player.getUniqueId().toString()))) {
 		isNewPlayer = true;
-	}
+	} else {isNewPlayer = false;}
 		if(System.getenv("DISCORD_HOOK_URL")!=null) {
 			if (isNewPlayer == true) {
 			emeraldQuest.announce("NEW Player " + player.getName() + " joined!");
@@ -666,7 +666,7 @@ public void onClick(PlayerInteractEvent event) throws ParseException, org.json.s
                     System.out.println("lastloot: "+EmeraldQuest.REDIS.get("lastloot"));
 			
 
-if (whatLoot<=4){                    
+if (whatLoot<=2){                    
 			
 
 
