@@ -47,6 +47,9 @@ commands:
   tip:
     description: "tip ems to other player"
     usage: "/tip <amount> <player>"
+  vote:
+    description: "shows where to vote for rewards"
+    usage: "/vote"
   tp:
     description: "a YouTube Rank command for p2p tp"
     usage: "/tp <player> <player>"
