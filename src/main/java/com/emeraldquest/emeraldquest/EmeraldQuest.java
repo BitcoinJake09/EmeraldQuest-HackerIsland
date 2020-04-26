@@ -22,11 +22,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.*;
 import org.bukkit.block.Block;
 import org.bukkit.event.server.ServerListPingEvent;
-import org.bukkit.Material.*;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.Material;
+import org.bukkit.Material.*;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
@@ -124,6 +124,7 @@ public class  EmeraldQuest extends JavaPlugin {
     private Map<String, CommandAction> ytCommands;
     private Player[] moderators;
     private Player[] youtubers;
+    public Long checkTime60 = new Date().getTime();
 
     @Override
     public void onEnable() {
@@ -195,6 +196,7 @@ public class  EmeraldQuest extends JavaPlugin {
         modCommands.put("unban", new UnbanCommand());
         modCommands.put("banlist", new BanlistCommand());
         modCommands.put("spectate", new SpectateCommand(this));
+        modCommands.put("tp", new TpCommand(this));
         modCommands.put("emergencystop", new EmergencystopCommand());
         // TODO: Remove this command after migrate.
         modCommands.put("migrateclans", new MigrateClansCommand());
@@ -358,7 +360,16 @@ public class  EmeraldQuest extends JavaPlugin {
             }
         }, 0, 100L);
 
-
+	//discord 1 hour announce
+        scheduler.scheduleSyncRepeatingTask(this, new Runnable() {
+            @Override
+            public void run() {
+                long waitTime60 = 1000 * 60 * 60;
+		if (checkTime60 <= ((new Date().getTime()) - waitTime60)) {
+			sendDiscordMessage("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/");
+                }
+            }
+        }, 0, 1000L);
     }
 
     public void run_season_events() {
@@ -1062,6 +1073,8 @@ public boolean loadPlayerWorldDatas(Player player, String loadWorld) {
 		announceIgnore("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/",player.getName());
 		player.sendMessage(ChatColor.AQUA + "You just got " + LAND_PRICE + "e for Voting!");
 			addEmeralds(player,LAND_PRICE);
+			sendDiscordMessage(player.getName()+" Just got " + LAND_PRICE + "e for Voting!");
+			sendDiscordMessage("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/");
 			return true;
 		} else if (whatLoot==8){
 			item = new ItemStack(Material.EXPERIENCE_BOTTLE, 16);
@@ -1098,13 +1111,20 @@ public boolean loadPlayerWorldDatas(Player player, String loadWorld) {
 			announceIgnore("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/",player.getName());
 			player.sendMessage(ChatColor.AQUA + "You just got " + (LAND_PRICE/4) + "e for Voting!");
 			addEmeralds(player,(LAND_PRICE/4));
+			sendDiscordMessage(player.getName()+" Just got " + (LAND_PRICE/4) + "e for Voting!");
+			sendDiscordMessage("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/");
 			return true;
 		}
 	Integer amount = item.getAmount();
-	announceIgnore(player.getName()+" Just got " + amount + " " + item.getType() + " for Voting!",player.getName());
+	String tempString = ""+item.getType();
+        String rs = tempString.replace("_"," "); // Replace _
+  	String itemWon = rs;
+	announceIgnore(player.getName()+" Just got " + amount + " " + itemWon + " for Voting!",player.getName());
 	announceIgnore("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/",player.getName());
-	player.sendMessage(ChatColor.AQUA + "You just got " + amount + " " + item.getType() + " for Voting!");
+	player.sendMessage(ChatColor.AQUA + "You just got " + amount + " " + itemWon + " for Voting!");
 	player.getInventory().addItem(item);
+	sendDiscordMessage(player.getName()+" Just got " + amount + " " + itemWon + " for Voting!");
+	sendDiscordMessage("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/");
 	return true;
 	}
   return false;
