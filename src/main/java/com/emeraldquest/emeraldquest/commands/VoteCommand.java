@@ -17,6 +17,7 @@ public class VoteCommand extends CommandAction {
   }
     public boolean run(CommandSender sender, Command cmd, String label, String[] args, Player player) {
 	String playerName = player.getName(); //(player.getName()
+	//playerName = args[0]; // for testing
 	if (emeraldQuest.didVote(playerName) == 0) {
 		player.sendMessage(ChatColor.GREEN + "Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/");
 		player.sendMessage(ChatColor.AQUA + "Run command again after you vote for reward!");

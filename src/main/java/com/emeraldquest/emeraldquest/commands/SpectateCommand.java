@@ -26,7 +26,11 @@ public class SpectateCommand extends CommandAction {
                 emeraldQuest.error(((Player) sender), "Player " + args[0] + " isn't online.");
             }
             return true;
-        }
-        return false;
+        } else {
+		((Player) sender).setGameMode(GameMode.SURVIVAL);
+		sender.sendMessage("set gamemode to survival");
+	return true;
+	}
+        //return false;
     }
 }
