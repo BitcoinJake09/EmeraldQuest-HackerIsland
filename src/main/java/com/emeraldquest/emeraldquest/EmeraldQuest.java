@@ -367,6 +367,8 @@ public class  EmeraldQuest extends JavaPlugin {
                 long waitTime60 = 1000 * 60 * 60;
 		if (checkTime60 <= ((new Date().getTime()) - waitTime60)) {
 			sendDiscordMessage("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/");
+			announce("Please Vote here for Rewards! https://minecraft-mp.com/server/189942/vote/");
+			checkTime60=new Date().getTime();
                 }
             }
         }, 0, 1000L);
