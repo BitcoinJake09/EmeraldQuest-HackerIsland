@@ -832,9 +832,7 @@ public boolean canBuild(Location location, Player player) {
                 if (cmd.getName().equalsIgnoreCase(entry.getKey())) {
                     if (isModerator(player)) {
                         entry.getValue().run(sender, cmd, label, args, player);
-                    } else {
-                        //sender.sendMessage("You don't have enough permissions to execute this command!");
-                    }
+                    } 
                 }
             }
  		// YT COMMANDS
@@ -842,8 +840,6 @@ public boolean canBuild(Location location, Player player) {
                 if (cmd.getName().equalsIgnoreCase(entry.getKey())) {
                     if (isYoutuber(player)) {
                         entry.getValue().run(sender, cmd, label, args, player);
-                    } else {
-                        //sender.sendMessage("You don't have enough permissions to execute this command!");
                     }
                 }
             }

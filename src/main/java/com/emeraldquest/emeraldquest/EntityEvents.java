@@ -76,7 +76,7 @@ public class EntityEvents implements Listener {
             Material.GRAY_SHULKER_BOX, Material.GREEN_SHULKER_BOX, Material.LIGHT_BLUE_SHULKER_BOX,
             Material.LIME_SHULKER_BOX, Material.MAGENTA_SHULKER_BOX, Material.ORANGE_SHULKER_BOX,
             Material.PINK_SHULKER_BOX, Material.PURPLE_SHULKER_BOX, Material.RED_SHULKER_BOX,
-            Material.WHITE_SHULKER_BOX, Material.YELLOW_SHULKER_BOX, Material.STONE_BUTTON, Material.LEGACY_STONE_PLATE);
+            Material.WHITE_SHULKER_BOX, Material.YELLOW_SHULKER_BOX, Material.LIGHT_GRAY_SHULKER_BOX, Material.SHULKER_BOX, Material.STONE_BUTTON, Material.LEGACY_STONE_PLATE, Material.BREWING_STAND, Material.CHEST, Material.DISPENSER, Material.JUNGLE_DOOR, Material.JUNGLE_FENCE_GATE, Material.LEVER, Material.PAINTING, Material.SPRUCE_DOOR, Material.SPRUCE_FENCE_GATE, Material.LEGACY_ACACIA_DOOR, Material.LEGACY_BIRCH_DOOR, Material.LEGACY_DARK_OAK_DOOR, Material.LEGACY_JUNGLE_DOOR, Material.LEGACY_SPRUCE_DOOR, Material.LEGACY_WOOD_DOOR, Material.OAK_DOOR, Material.OAK_FENCE_GATE, Material.LEGACY_SPRUCE_FENCE_GATE, Material.LEGACY_JUNGLE_FENCE_GATE, Material.LEGACY_FENCE_GATE, Material.LEGACY_DARK_OAK_FENCE_GATE, Material.LEGACY_BIRCH_FENCE_GATE, Material.LEGACY_ACACIA_FENCE_GATE, Material.OAK_DOOR, Material.OAK_DOOR);
 
     private static final List<EntityType> PROTECTED_ENTITIES = Arrays.asList(EntityType.ARMOR_STAND, EntityType.ITEM_FRAME,
             EntityType.PAINTING, EntityType.ENDER_CRYSTAL);
