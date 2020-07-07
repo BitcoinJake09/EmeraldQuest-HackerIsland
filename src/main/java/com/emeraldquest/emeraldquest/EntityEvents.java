@@ -17,6 +17,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.player.*;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.block.Sign;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -1062,9 +1063,9 @@ if (whatLoot<=2){
             // If block's inventory has "public" in it, allow the player to interact with it.
             if(b.getState() instanceof InventoryHolder) {
                 Inventory blockInventory = ((InventoryHolder) b.getState()).getInventory();
-                if(blockInventory.getName().toLowerCase().contains("public")) {
-                    return;
-                }
+                //if(blockInventory.getName().toLowerCase().contains("public")) {
+                    //return;
+                //}
             }
             // If player doesn't have permission, disallow the player to interact with it.
             if(!emeraldQuest.canBuild(b.getLocation(),event.getPlayer())) {
@@ -1097,5 +1098,47 @@ if (whatLoot<=2){
 	void onExplode(EntityExplodeEvent event) {
 		event.setCancelled(true);
 	}
+
+  @EventHandler
+    public void onPortal(PlayerPortalEvent event) {
+        Player player = event.getPlayer();
+
+        if (event.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) {
+            //event.useTravelAgent(true);
+            //event.getPortalTravelAgent().setCanCreatePortal(true);
+            Location location;
+            if (player.getWorld() == Bukkit.getServer().getWorld(emeraldQuest.SERVER_NAME)) {
+                 location = new Location(Bukkit.getServer().getWorld(emeraldQuest.SERVER_NAME+"_nether"), event.getFrom().getBlockX() / 8, event.getFrom().getBlockY(), event.getFrom().getBlockZ() / 8);
+            } else {
+                location = new Location(Bukkit.getServer().getWorld(emeraldQuest.SERVER_NAME), event.getFrom().getBlockX() * 8, event.getFrom().getBlockY(), event.getFrom().getBlockZ() * 8);
+            }
+            //System.out.println("nether test:" + location);
+            event.setTo(location);
+        }
+
+        if (event.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL) {
+            if (player.getWorld() == Bukkit.getServer().getWorld(emeraldQuest.SERVER_NAME)) {
+                Location loc = new Location(Bukkit.getServer().getWorld(emeraldQuest.SERVER_NAME+"_the_end"), 100, 50, 0); // This is the vanilla location for obsidian platform.
+                event.setTo(loc);
+                Block block = loc.getBlock();
+                for (int x = block.getX() - 2; x <= block.getX() + 2; x++) {
+                    for (int z = block.getZ() - 2; z <= block.getZ() + 2; z++) {
+                        Block platformBlock = loc.getWorld().getBlockAt(x, block.getY() - 1, z);
+                        if (platformBlock.getType() != Material.OBSIDIAN) {
+                            platformBlock.setType(Material.OBSIDIAN);
+                        }
+                        for (int yMod = 1; yMod <= 3; yMod++) {
+                            Block b = platformBlock.getRelative(BlockFace.UP, yMod);
+                            if (b.getType() != Material.AIR) {
+                                b.setType(Material.AIR);
+                            }
+                        }
+                    }
+                }
+            } else if (player.getWorld() == Bukkit.getServer().getWorld(emeraldQuest.SERVER_NAME+"_the_end")) {
+                event.setTo(Bukkit.getServer().getWorld(emeraldQuest.SERVER_NAME).getSpawnLocation());
+            }
+        }
+    }
 
 }

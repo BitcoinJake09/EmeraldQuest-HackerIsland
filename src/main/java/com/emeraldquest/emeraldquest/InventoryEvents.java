@@ -11,6 +11,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryInteractEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.Inventory;
@@ -107,7 +108,7 @@ public class InventoryEvents implements Listener {
         final User user=new User(player);
         user.setTotalExperience(user.experience());
         // Merchant inventory
-        if(inventory.getName().equalsIgnoreCase("Market")) {
+        if(inventory.getType().equals(InventoryType.MERCHANT)) {
             if(event.getRawSlot() < event.getView().getTopInventory().getSize()) {
                 // player buys
                 final ItemStack clicked = event.getCurrentItem();
@@ -279,7 +280,7 @@ while (clicked.getAmount() > 0){ clicked.setAmount(clicked.getAmount() - 1);}
                 event.setCancelled(true);
             }
 
-        } else if (inventory.getName().equals("Compass") && !player.hasMetadata("teleporting")) {
+        } else if (inventory.contains(Material.COMPASS) && !player.hasMetadata("teleporting")) {
             final User bp = new User(player);
 
             ItemStack clicked = event.getCurrentItem();
