@@ -183,6 +183,7 @@ public class  EmeraldQuest extends JavaPlugin {
         commands.put("vote", new VoteCommand(this));
         commands.put("profession", new ProfessionCommand(this));
         commands.put("spawn", new SpawnCommand(this));
+        //commands.put("market1", new Market1Command(this));
         //commands.put("vote", new VoteCommand(this));
         modCommands = new HashMap<String, CommandAction>();
         modCommands.put("rank", new RankCommand(this));
@@ -664,7 +665,7 @@ public boolean canBuild(Location location, Player player) {
 
         if (location.getWorld().getEnvironment().equals(Environment.THE_END)) {
             // If theyre not in the overworld, they cant build
-            return false;
+            return true; // open the end?
         } else if (landIsClaimed(location)) {
             if(isOwner(location,player)) {
                 return true;
@@ -857,7 +858,7 @@ public boolean canBuild(Location location, Player player) {
 	
 	// the isPvP function by @bitcoinjake09
 public boolean isPvP(Location location) {
-		if ((landPermissionCode(location).equals("v")==true)||(landPermissionCode(location).equals("pv")==true))
+		if ((landPermissionCode(location).equals("v")==true)||(landPermissionCode(location).equals("pv")==true)||(location.getWorld().getEnvironment().equals(Environment.THE_END)))
 		if(SET_PvP.equals("true")){return true;}// returns true. it is a pvp or public pvp and if SET_PvP is true
 
                return false;//not pvp
